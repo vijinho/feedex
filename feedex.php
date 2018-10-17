@@ -225,7 +225,9 @@ if (!empty($input_filename)) {
                 $urls[$last_line][] = trim($line);
                 continue;
             } else {
-                $urls[trim($line)] = [];
+                if (!array_key_exists(trim($line), $urls)) {
+                    $urls[trim($line)] = [];
+                }
                 $last_line = trim($line);
             }
         }
