@@ -45,7 +45,7 @@ switch (php_sapi_name()) {
         define('DEBUG', 0);
         $save_data = 0;
         $params    = [
-            'refresh', 'url', 'format', 'echo', 'guess'
+            'refresh', 'url', 'format', 'echo'
         ];
 
         // filter input variables
@@ -89,7 +89,7 @@ switch (php_sapi_name()) {
 // : - required, :: - optional
 
 $options = getopt("hvdu:f:d:ei:g", [
-    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:', 'guess'
+    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:'
 ]);
 
 $do = [];
@@ -99,8 +99,7 @@ foreach ([
  'debug'   => ['d', 'debug'],
  'echo'    => ['e', 'echo'],
  'url'     => ['u', 'url'],
- 'input'   => ['i', 'input'],
- 'guess'   => ['g', 'guess'],
+ 'input'   => ['i', 'input']
 ] as $i => $opts) {
     $do[$i] = (int) (array_key_exists($opts[0], $options) || array_key_exists($opts[1],
             $options));
@@ -142,7 +141,6 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "\t-d,  --debug                  Run in debug mode (implies also -v, --verbose)",
         "\t-e,  --echo                   (Optional) Echo/output the result to stdout if successful",
         "\t-u,  --url=<url>              URL to check for feeds)",
-        "\t-g,  --guess                  (Optional) Attempt to guess URL if no feed found",
         "\t-d,  --dir=                   (Optional) Directory for storing files (sys_get_temp_dir() if not specified)",
         "\t-i   --input={filename}       (Optional) Text file of URLs, one-per-line to read in and process.",
         "\t     --filename={output}      (Optional) Filename for output data from operation",
@@ -270,60 +268,23 @@ $ff = new FeedFinder();
 $total_urls = count($urls);
 $i = 0;
 foreach ($urls as $u) {
-    $guesses = 0;
-    guess_url:
     $i++;
     $feeds = [];
-    $error = false;
     debug("Checking URL ($i/$total_urls):\n\t$u");
     $target_url = url_resolve($u);
     if (empty($target_url) || is_numeric($target_url)) {
         $errors[] = "Bad URL for:\n\t$u\n\t$target_url";
-        $error = true;
+        continue;
     }
-    if (!$error) {
-        if ($u !== $target_url) {
-            $u = $target_url;
-        }
-        $ff->setURL($u);
-        $feeds = $ff->getFeeds();
+    if ($u !== $target_url) {
+        $u = $target_url;
     }
-    // not found, try guess
-    if (empty($feeds) && $guesses < 6) {
+    $ff->setURL($u);
+    $feeds = $ff->getFeeds();
+    if (empty($feeds)) {
         $data[$u] = null;
         debug("No feeds found for URL:\n\t$u");
         $errors[] = "No feeds found for:\n\t$u";
-        if ($do['guess']) {
-            $parts = parse_url($u);
-            switch ($guesses) {
-                case '6':
-                    $u = sprintf("%s://blog.%s/", $parts['scheme'], str_replace('www.', '', $parts['host']));
-                    break;
-                case '5':
-                    $u = sprintf("%s://%s/blog/", $parts['scheme'], $parts['host']);
-                    break;
-                case '4':
-                    $u = sprintf("%s://%s/feed/rss/", $parts['scheme'], $parts['host']);
-                    break;
-                case '3':
-                    $u = sprintf("%s://%s/comments/feed/", $parts['scheme'], $parts['host']);
-                    break;
-                case '2':
-                    $u = sprintf("%s://%s/feed/", $parts['scheme'], $parts['host']);
-                    break;
-                case '1':
-                    $u = sprintf("%s://%s/rss.xml", $parts['scheme'], $parts['host']);
-                    break;
-                case '0':
-                    $u = sprintf("%s://%s/rss", $parts['scheme'], $parts['host']);
-                    break;
-            }
-            if ($guesses < 6) {
-                $guesses++;
-                $total_urls++;
-                goto guess_url;
-            }
-        }
     } else {
         $data[$u] = $feeds;
         debug("Feeds found for URL:\n\t$u", $feeds);
