@@ -2,12 +2,13 @@
 
 PHP CLI and WWW tool to extract and save feeds from URL(s)
 
-- Full-resolves URL before attemptin to extract feed URLs
+- Full-resolves URL before attempting to extract feed URLs
 - Extracts the URLs of RSS (1.0 and 2.0) and ATOM feeds associated to a page, as well as OPML outline documents with [nicolus/picofeed](https://github.com/nicolus/picoFeed)
 - Runs on the command-line
 - Can be called as a stand-alone webservice using the php command line built-in server
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
 - Can output the result if successful to *stdout*
+- Output can be used as input when using option 'txt' and URLs can be re-checked with --force option.
 - Errors are output in JSON as 'errors' with just a bunch of strings
 
 ```
@@ -26,18 +27,20 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 ## Command-line options
 
 ```
+Usage: php feedex.php
 Extract and save feeds from URL(s)
 (Specifying any other unknown argument options will be ignored.)
 
         -h,  --help                   Display this help and exit
         -v,  --verbose                Run in verbose mode
         -d,  --debug                  Run in debug mode (implies also -v, --verbose)
+        -u,  --url=<url>              (Required or -i) URL to check for feeds)
+        -i   --input={filename}       (Required or -u) Text file of URLs, one-per-line to read in and process.
+        -c,  --clear                  (Optional) Clear-out URLs which have no feeds before writing output file.
         -e,  --echo                   (Optional) Echo/output the result to stdout if successful
-        -u,  --url=<url>              URL to check for feeds)
-        -d,  --dir=                   (Optional) Directory for storing files (sys_get_temp_dir() if not specified)
-        -i   --input={filename}       (Optional) Text file of URLs, one-per-line to read in and process.
-             --filename={output}      (Optional) Filename for output data from operation
         -f   --format={txt|json|php}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)
+             --filename={output}      (Optional) Filename for output data from operation
+             --force-check            (Optional) Forcibly check URLs, even for those which already have feeds in the input file.
 ```
 
 ## Output Format

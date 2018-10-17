@@ -31,7 +31,6 @@ if (empty($commands)) {
     exit;
 }
 
-
 require_once dirname(__FILE__) . '/vendor/autoload.php';
 use PicoFeed\Reader\Reader;
 
@@ -90,7 +89,7 @@ switch (php_sapi_name()) {
 // : - required, :: - optional
 
 $options = getopt("hvdu:f:d:ei:gc", [
-    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:', 'force-check', 'clear'
+    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'filename:', 'input:', 'force-check', 'clear'
 ]);
 
 $do = [];
@@ -142,13 +141,13 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "\t-h,  --help                   Display this help and exit",
         "\t-v,  --verbose                Run in verbose mode",
         "\t-d,  --debug                  Run in debug mode (implies also -v, --verbose)",
+        "\t-u,  --url=<url>              (Required or -i) URL to check for feeds)",
+        "\t-i   --input={filename}       (Required or -u) Text file of URLs, one-per-line to read in and process.",
         "\t-c,  --clear                  (Optional) Clear-out URLs which have no feeds before writing output file.",
         "\t-e,  --echo                   (Optional) Echo/output the result to stdout if successful",
-        "\t-u,  --url=<url>              URL to check for feeds)",
-        "\t-d,  --dir=                   (Optional) Directory for storing files (sys_get_temp_dir() if not specified)",
-        "\t-i   --input={filename}       (Optional) Text file of URLs, one-per-line to read in and process.",
-        "\t     --filename={output}      (Optional) Filename for output data from operation",
         "\t-f   --format={txt|json|php}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)",
+        "\t     --filename={output}      (Optional) Filename for output data from operation",
+        "\t     --force-check            (Optional) Forcibly check URLs, even for those which already have feeds in the input file.",
     ]);
 
     // goto jump here if there's a problem
@@ -200,18 +199,7 @@ define('OUTPUT_FORMAT', $format);
 verbose("OUTPUT_FORMAT: $format");
 
 //-----------------------------------------------------------------------------
-// get dir and file for output
-
-$dir = sys_get_temp_dir();
-if (!empty($options['dir'])) {
-    $dir = $options['dir'];
-}
-$dircheck = realpath($dir);
-if (empty($dircheck) || !is_dir($dircheck)) {
-    $errors[] = "You must specify a valid directory!";
-    goto errors;
-}
-debug("Using dir: $dir");
+// file for output
 
 // read in URLs from file
 $input_filename = !empty($options['input']) ? $options['input'] : '';
