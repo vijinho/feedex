@@ -741,8 +741,8 @@ function serialize_save($file, $data)
         if (!file_put_contents($file, $data)) {
             $error = sprintf("Unknown Error writing file: '%s' (Prepend: '%s', Append: '%s')",
                 $file, $prepend, $append);
+            return $error;
         }
-        return $error;
     }
     return true;
 }
