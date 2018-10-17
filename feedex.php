@@ -265,6 +265,7 @@ $reader = new Reader;
 $data = [];
 $total_urls = count($urls);
 $i = 0;
+$urls = array_shuffle($urls); // randomize check order
 foreach ($urls as $url => $existing_feeds) {
     $i++;
     if (count($existing_feeds)) {
@@ -309,6 +310,8 @@ foreach ($urls as $url => $existing_feeds) {
     }
 }
 
+// sort urls
+ksort($urls);
 $data = $urls;
 
 //-----------------------------------------------------------------------------
@@ -571,6 +574,31 @@ function cmd_execute($cmd, $split = true, $exp = "/\n/")
         return $data;
     }
     return preg_split($exp, $data);
+}
+
+
+/**
+ * Shuffle an associative array
+ *
+ * @param  array $array array to shuffle
+ * @return array $array shuffled
+ * @see https://secure.php.net/manual/en/function.shuffle.php
+ */
+function array_shuffle($array)
+{
+    if (empty($array) || !is_array($array)) {
+        return $array;
+    }
+
+    $keys = array_keys($array);
+    shuffle($keys);
+
+    $results = array();
+    foreach ($keys as $key) {
+        $results[$key] = $array[$key];
+    }
+
+    return $results;
 }
 
 
