@@ -43,27 +43,84 @@ Extract and save feeds from URL(s)
              --force-check            (Optional) Forcibly check URLs, even for those which already have feeds in the input file.
 ```
 
-## Output Format
+## Example output Format
 
 The script can take-in previous txt format output and re-use it as input, checking only urls where there are no existing feeds.
 
 ### txt
 
+The input/output format for 'txt' is:
+
 ```
-URL
-[TAB]FEED-URL-1
-[TAB]FEED-URL-2
-...
+<URL><CR/LF>
+<TAB><FEED_URL_1><CR>/LF>
+<TAB><FEED_URL_2><CR>/LF>
+
+<URL2><CR/LF>
+```
+
+Only stand-alone URL lines without following <TAB> feed lines are searched for feeds, unless `--force-check` is used which forces all URLs to be checked in the text file.
+
+
+```
+http://campaigntoabolishthebbc.blogspot.com/
+        http://campaigntoabolishthebbc.blogspot.com/feeds/posts/default
+        http://campaigntoabolishthebbc.blogspot.com/feeds/posts/default?alt=rss
+        https://www.blogger.com/feeds/7418166530762317285/posts/default
+
+http://cash-is-cool.com/
+        http://cash-is-cool.com/rss/articles.php
+        http://cash-is-cool.com/rss/twitter.php
+
+http://datastori.es/
+        http://datastori.es/comments/feed/
+        http://datastori.es/feed/
+        http://datastori.es/feed/m4a/
+        http://datastori.es/feed/mp3/
+        http://datastori.es/feed/podcast/
+
+http://eurofolkradio.com/
+        http://eurofolkradio.com/comments/feed/
+        http://eurofolkradio.com/feed/
+        http://eurofolkradio.com/feed/podcast
+
+http://grahamhancock.com/blog/
+        https://grahamhancock.com/blog/feed/
 ```
 
 ### json
 
 ```
 {
-    "URL": [
-        "FEED-URL-1",
-        "FEED-URL-2"
-    ]
+    "http:\/\/campaigntoabolishthebbc.blogspot.com\/": [
+        "http:\/\/campaigntoabolishthebbc.blogspot.com\/feeds\/posts\/default",
+        "http:\/\/campaigntoabolishthebbc.blogspot.com\/feeds\/posts\/default?alt=rss",
+        "https:\/\/www.blogger.com\/feeds\/7418166530762317285\/posts\/default"
+    ],
+    "http:\/\/cash-is-cool.com\/": [
+        "http:\/\/cash-is-cool.com\/rss\/articles.php",
+        "http:\/\/cash-is-cool.com\/rss\/twitter.php"
+    ],
+    "http:\/\/datastori.es\/": [
+        "http:\/\/datastori.es\/comments\/feed\/",
+        "http:\/\/datastori.es\/feed\/",
+        "http:\/\/datastori.es\/feed\/m4a\/",
+        "http:\/\/datastori.es\/feed\/mp3\/",
+        "http:\/\/datastori.es\/feed\/podcast\/"
+    ],
+    "http:\/\/eurofolkradio.com\/": [
+        "http:\/\/eurofolkradio.com\/comments\/feed\/",
+        "http:\/\/eurofolkradio.com\/feed\/",
+        "http:\/\/eurofolkradio.com\/feed\/podcast"
+    ],
+    "http:\/\/grahamhancock.com\/blog\/": [
+        "https:\/\/grahamhancock.com\/blog\/feed\/"
+    ],
+    "http:\/\/greatgameindia.com\/": [
+        "http:\/\/greatgameindia.com\/comments\/feed\/",
+        "http:\/\/greatgameindia.com\/feed\/",
+        "http:\/\/greatgameindia.com\/homepage\/feed\/"
+    ],
 }
 ```
 
