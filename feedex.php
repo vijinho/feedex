@@ -207,32 +207,44 @@ $input_filename = !empty($options['i']) ? $options['i'] : $input_filename;
 if (!empty($input_filename)) {
     if (!file_exists($input_filename)) {
         $errors[] = "URL input file does not exist: $input_filename";
+        goto errors;
     } else {
-        // load in urls text file
-        $urls = to_charset(file($input_filename));
-        // copy existing feeds to array
-        foreach ($urls as $i => $line) {
-            unset($urls[$i]);
-            if (empty(trim($line))) {
-                continue;
+        // check if we are loading .js or .json file:
+        if (false !== stristr($input_filename, '.js')) {
+            $urls      = json_load($input_filename);
+            if (!is_string($urls)) {
+                verbose(sprintf("Loaded previously saved urls from:\n\t%s", $input_filename));
+            } else if (empty($urls)) {
+                $errors[] = $urls;
             }
-            $parts = parse_url(trim($line));
-            if (false === $parts || !array_key_exists('host', $parts)) {
-                debug("Invalid URL read:\n\t$line");
-                continue;
-            }
-            if ("\t" === $line[0]) {
-                $urls[$last_line][] = trim($line);
-                continue;
-            } else {
-                if (!array_key_exists(trim($line), $urls)) {
-                    $urls[trim($line)] = [];
+        } else {
+            // load in urls text file
+            $urls = to_charset(file($input_filename));
+            // copy existing feeds to array
+            foreach ($urls as $i => $line) {
+                unset($urls[$i]);
+                if (empty(trim($line))) {
+                    continue;
                 }
-                $last_line = trim($line);
+                $parts = parse_url(trim($line));
+                if (false === $parts || !array_key_exists('host', $parts)) {
+                    debug("Invalid URL read:\n\t$line");
+                    continue;
+                }
+                if ("\t" === $line[0]) {
+                    $urls[$last_line][] = trim($line);
+                    continue;
+                } else {
+                    if (!array_key_exists(trim($line), $urls)) {
+                        $urls[trim($line)] = [];
+                    }
+                    $last_line = trim($line);
+                }
             }
         }
         if (empty($urls)) {
             $errors[] = "No URLs not found in input file:\n\t$input_filename";
+            goto errors;
         }
         debug(sprintf("Found %d valid URL(s) in input file:\n\t%s", count($urls), $input_filename), $urls);
     }

@@ -8,7 +8,7 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 - Can be called as a stand-alone webservice using the php command line built-in server
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
 - Can output the result if successful to *stdout*
-- Output can be used as input when using option 'txt' and URLs can be re-checked with --force option.
+- Output file can be used as input when using options 'txt' and 'json' and URLs can be re-checked with --force option.
 - Errors are output in JSON as 'errors' with just a bunch of strings
 
 ```
