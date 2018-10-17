@@ -1,0 +1,5 @@
+{
+    "require": {
+        "imelgrat/feed-finder": "^2.0"
+    }
+}
