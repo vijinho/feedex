@@ -89,8 +89,8 @@ switch (php_sapi_name()) {
 // see https://secure.php.net/manual/en/function.getopt.php
 // : - required, :: - optional
 
-$options = getopt("hvdu:f:d:ei:g", [
-    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:', 'force-check'
+$options = getopt("hvdu:f:d:ei:gc", [
+    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:', 'force-check', 'clear'
 ]);
 
 $do = [];
@@ -101,6 +101,7 @@ foreach ([
  'echo'    => ['e', 'echo'],
  'url'     => ['u', 'url'],
  'input'   => ['i', 'input'],
+ 'clear'   => ['c', 'clear'],
  'force-check'   => [null, 'force-check']
 ] as $i => $opts) {
     $do[$i] = (int) (array_key_exists($opts[0], $options) || array_key_exists($opts[1],
@@ -141,6 +142,7 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "\t-h,  --help                   Display this help and exit",
         "\t-v,  --verbose                Run in verbose mode",
         "\t-d,  --debug                  Run in debug mode (implies also -v, --verbose)",
+        "\t-c,  --clear                  (Optional) Clear-out URLs which have no feeds before writing output file.",
         "\t-e,  --echo                   (Optional) Echo/output the result to stdout if successful",
         "\t-u,  --url=<url>              URL to check for feeds)",
         "\t-d,  --dir=                   (Optional) Directory for storing files (sys_get_temp_dir() if not specified)",
@@ -301,8 +303,16 @@ foreach ($urls as $url => $existing_feeds) {
         $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getCode(), $e->getMessage(), $u);
         $errors[] = $msg;
         debug($msg);
+        if ($do['clear']) {
+            unset($urls[$url]);
+        }
     }
-    if (!empty($feeds)) {
+    if (empty($feeds)) {
+        // no feeds found
+        if ($do['clear']) {
+            unset($urls[$url]);
+        }
+    } else {
         $feeds = array_unique($feeds);
         sort($feeds);
         $urls[$url] = $feeds;
