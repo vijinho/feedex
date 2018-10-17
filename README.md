@@ -9,6 +9,7 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
 - Can output the result if successful to *stdout*
 - Output file can be used as input when using options 'txt' and 'json' and URLs can be re-checked with --force option.
+- Can output found feeds as an .opml file.
 - Errors are output in JSON as 'errors' with just a bunch of strings
 
 ```
@@ -177,7 +178,6 @@ http://example.com/blog/public
 [D 1/2] Memory used (1/2) MB (current/peak).
 ```
 
-
 ## Example of reading in file of URLs
 
 Read in file of URLs and process, outputting txt, piping screen output (stderr and stdout) to less
@@ -196,6 +196,18 @@ Array
 http://example.com/blog/public/
         http://example.com/feed/
         http://example.com/comments/feed/
+```
+
+## Example of creating OPML file from extracted subscriptions
+
+Reads in 'urls.txt', extracts feeds and writes to 'results.opml', debug mode piping all output including *stderr* to *stdout* into *less* viewer
+
+`php feedex.php --input=urls.txt --filename=results.opml --echo --format=opml --debug 2>&1 | less`
+
+Contents of 'results.opml':
+
+```
+
 ```
 
 ## Running as a webservice

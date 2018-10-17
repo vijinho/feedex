@@ -32,7 +32,10 @@ if (empty($commands)) {
 }
 
 require_once dirname(__FILE__) . '/vendor/autoload.php';
+
+// reader for extracting feeds
 use PicoFeed\Reader\Reader;
+use PicoFeed\PicoFeedException;
 
 //-----------------------------------------------------------------------------
 // detect if run in web mode or cli
@@ -138,16 +141,16 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "Usage: php feedex.php",
         "Extract and save feeds from URL(s)",
         "(Specifying any other unknown argument options will be ignored.)\n",
-        "\t-h,  --help                   Display this help and exit",
-        "\t-v,  --verbose                Run in verbose mode",
-        "\t-d,  --debug                  Run in debug mode (implies also -v, --verbose)",
-        "\t-u,  --url=<url>              (Required or -i) URL to check for feeds)",
-        "\t-i   --input={filename}       (Required or -u) Text file of URLs, one-per-line to read in and process.",
-        "\t-c,  --clear                  (Optional) Clear-out URLs which have no feeds before writing output file.",
-        "\t-e,  --echo                   (Optional) Echo/output the result to stdout if successful",
-        "\t-f   --format={txt|json|php}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)",
-        "\t     --filename={output}      (Optional) Filename for output data from operation",
-        "\t     --force-check            (Optional) Forcibly check URLs, even for those which already have feeds in the input file.",
+        "\t-h,  --help                        Display this help and exit",
+        "\t-v,  --verbose                     Run in verbose mode",
+        "\t-d,  --debug                       Run in debug mode (implies also -v, --verbose)",
+        "\t-u,  --url=<url>                   (Required or -i) URL to check for feeds)",
+        "\t-i   --input={filename}            (Required or -u) Text file of URLs, one-per-line to read in and process.",
+        "\t-c,  --clear                       (Optional) Clear-out URLs which have no feeds before writing output file.",
+        "\t-e,  --echo                        (Optional) Echo/output the result to stdout if successful",
+        "\t-f   --format={txt|json|php|opml}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml",
+        "\t     --filename={output}           (Optional) Filename for output data from operation",
+        "\t     --force-check                 (Optional) Forcibly check URLs, even for those which already have feeds in the input file.",
     ]);
 
     // goto jump here if there's a problem
@@ -185,6 +188,9 @@ if (!empty($options['format'])) {
     $format = $options['format'];
 }
 switch ($format) {
+    case 'opml':
+        $format = 'opml';
+        break;
     case 'php':
         $format = 'php';
         break;
@@ -325,9 +331,66 @@ foreach ($urls as $url => $existing_feeds) {
     }
 }
 
-// sort urls
 ksort($urls);
-$data = $urls;
+if (OUTPUT_FORMAT !== 'opml') {
+    $data = $urls;
+    goto output;
+}
+
+//-----------------------------------------------------------------------------
+// create OPML
+
+use PicoFeed\Serialization\Subscription;
+use PicoFeed\Serialization\SubscriptionList;
+use PicoFeed\Serialization\SubscriptionListBuilder;
+
+// create subscription list
+$subscriptionList = SubscriptionList::create()
+    ->setTitle('FeedEx');
+
+$opml = [];
+
+$urls = array_shuffle($urls); // randomize fetch of feed urls
+foreach ($urls as $url => $feeds) {
+
+    if (empty($feeds)) {
+        continue;
+    }
+
+    verbose("Fetching feeds for:\n\t$url");
+
+    foreach ($feeds as $feed) {
+        try {
+            debug("Downloading feed:\n\t$feed");
+
+            // fetch feed
+            $resource = $reader->download($feed);
+            $parser = $reader->getParser(
+                $resource->getUrl(),
+                $resource->getContent(),
+                $resource->getEncoding()
+            );
+            $feed = $parser->execute();
+
+            // create subscription list entry
+            $subscriptionList->addSubscription(Subscription::create()
+                ->setTitle($feed->getTitle())
+                ->setFeedUrl($feed->getFeedUrl())
+                ->setSiteUrl($feed->getSiteUrl())
+                ->setDescription($feed->getDescription())
+            );
+
+        } catch (PicoFeedException $e) {
+            $msg = sprintf("Error getting feed %d: '%s' for URL:\n\t%s", $e->getCode(), $e->getMessage(), $feed);
+            $errors[] = $msg;
+            debug($msg);
+        }
+    }
+}
+
+// generate opml XML as text
+$opmlBuilder = new SubscriptionListBuilder($subscriptionList);
+$data = $opmlBuilder->build();
 
 //-----------------------------------------------------------------------------
 // final output of data
@@ -335,7 +398,7 @@ $data = $urls;
 output:
 
 // set data to write to file
-if (is_array($data) && !empty($data)) {
+if (!empty($data)) {
     $output = $data;
 }
 
@@ -344,6 +407,7 @@ if (!empty($output)) {
 
     if (!empty($output_filename)) {
         $file = $output_filename;
+
         switch (OUTPUT_FORMAT) {
             case 'php':
                 $save = serialize_save($file, $output);
@@ -361,10 +425,18 @@ if (!empty($output)) {
                 if (true !== $save) {
                     $errors[] = "\nFailed encoding JSON output file:\n\t$file\n";
                     $errors[] = "\nJSON Error: $save\n";
-                    goto errors;
                 } else {
                     verbose(sprintf("JSON written to output file:\n\t%s (%d bytes)\n",
                             $file, filesize($file)));
+                }
+                break;
+
+            case 'opml':
+                if (file_put_contents($file, $output)) {
+                    verbose(sprintf("OPML written to output file:\n\t%s (%d bytes)\n",
+                            $file, filesize($file)));
+                } else {
+                    $errors[] = "\nFailed writing OPML output file:\n\t$file\n";
                 }
                 break;
 
@@ -379,7 +451,13 @@ if (!empty($output)) {
                         }
                     }
                 }
-                file_put_contents($file, trim($txt));
+                if (file_put_contents($file, $txt)) {
+                    verbose(sprintf("TEXT written to output file:\n\t%s (%d bytes)\n",
+                            $file, filesize($file)));
+                } else {
+                    $errors[] = "\nFailed writing TEXT output file:\n\t$file\n";
+                    goto errors;
+                }
                 break;
         }
 
@@ -388,13 +466,16 @@ if (!empty($output)) {
     // output data if --echo
     if ($do['echo']) {
         switch (OUTPUT_FORMAT) {
-            default:
+            case 'opml':
+                echo $output;
+                break;
             case 'json':
                 echo json_encode(to_charset($output), JSON_PRETTY_PRINT);
                 break;
             case 'php':
                 echo serialize(to_charset($output));
                 break;
+            default:
             case 'txt':
                 $txt = '';
                 foreach ($output as $url => $feeds) {
@@ -415,7 +496,6 @@ if (!empty($output)) {
 if (!empty($errors)) {
     goto errors;
 }
-
 
 end:
 
