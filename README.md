@@ -123,9 +123,9 @@ http://example.com/blog/public
 
 ## Example of reading in file of URLs
 
-Read in file of URLs and process, outputting txt:
+Read in file of URLs and process, outputting txt, piping screen output (stderr and stdout) to less
 
-`php feedex.php --echo --format=txt --input=urls.txt --verbose`
+`php feedex.php --input=urls.txt --filename=results.txt --verbose --echo --clear 2>&1 | less`
 
 ```
 [V] OUTPUT_FORMAT: txt
