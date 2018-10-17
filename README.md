@@ -4,6 +4,7 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 
 - Full-resolves URL before attemptin to extract feed URLs
 - Extracts the URLs of RSS (1.0 and 2.0) and ATOM feeds associated to a page, as well as OPML outline documents with [imelgrat/feed-finder](https://github.com/imelgrat/feed-finder)
+- Can optionally attempt to guess URL by trying different hostnames/URL paths.
 - Runs on the command-line
 - Can be called as a stand-alone webservice using the php command line built-in server
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
@@ -35,10 +36,11 @@ Extract and save feeds from URL(s)
         -d,  --debug                  Run in debug mode (implies also -v, --verbose)
         -e,  --echo                   (Optional) Echo/output the result to stdout if successful
         -u,  --url=<url>              URL to check for feeds)
+        -g,  --guess                  (Optional) Attempt to guess URL if no feed found
         -d,  --dir=                   (Optional) Directory for storing files (sys_get_temp_dir() if not specified)
         -i   --input={filename}       (Optional) Text file of URLs, one-per-line to read in and process.
              --filename={output}      (Optional) Filename for output data from operation
-        -f   --format={txt|json}      (Optional) Output format for screen and filename: txt (default)|json
+        -f   --format={txt|json|php}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)
 ```
 
 ## Output Format
