@@ -217,30 +217,26 @@ if (!empty($input_filename)) {
     if (!file_exists($input_filename)) {
         $errors[] = "URL input file does not exist: $input_filename";
     } else {
-        // check URLs
+        // load in urls text file
         $urls = to_charset(file($input_filename));
-        $last_host = '';
-        $last_host_index = 0;
-        foreach ($urls as $i => $url) {
-            // if its a blank line, ignore
-            $url = trim($url);
-            if (empty($url)) {
-                unset($urls[$i]);
+        // copy existing feeds to array
+        foreach ($urls as $i => $line) {
+            unset($urls[$i]);
+            if (empty(trim($line))) {
                 continue;
             }
-            $parts = parse_url($url);
+            $parts = parse_url(trim($line));
             if (false === $parts || !array_key_exists('host', $parts)) {
-                debug("Invalid URL:\n\t$url");
-                unset($urls[$i]);
-            }
-            if (strtolower($parts['host']) == $last_host || "\t" == substr($urls[$i], 0, 1)) {
-                unset($urls[$i]);
-                unset($urls[$last_host_index]);
+                debug("Invalid URL read:\n\t$line");
                 continue;
             }
-
-            $last_host = strtolower($parts['host']);
-            $last_host_index = $i;
+            if ("\t" === $line[0]) {
+                $urls[$last_line][] = trim($line);
+                continue;
+            } else {
+                $urls[trim($line)] = [];
+                $last_line = trim($line);
+            }
         }
         if (empty($urls)) {
             $errors[] = "No URLs not found in input file:\n\t$input_filename";
@@ -263,21 +259,30 @@ $output_filename = !empty($options['filename']) ? $options['filename'] : '';
 
 //-----------------------------------------------------------------------------
 // MAIN
+
 $reader = new Reader;
 $data = [];
 $total_urls = count($urls);
 $i = 0;
-foreach ($urls as $u) {
+foreach ($urls as $url => $existing_feeds) {
     $i++;
+    if (count($existing_feeds)) {
+        continue;
+    }
     $feeds = [];
+    $u = $url;
     debug("Checking URL ($i/$total_urls):\n\t$u");
     $target_url = url_resolve($u);
     if (empty($target_url) || is_numeric($target_url)) {
         $errors[] = "Bad URL for:\n\t$u\n\t$target_url";
         continue;
     }
+
+    // update URL
     if ($u !== $target_url) {
+        unset($urls[$url]);
         $u = $target_url;
+        $urls[$u] = [];
     }
 
     try {
@@ -290,18 +295,20 @@ foreach ($urls as $u) {
         $feeds = array_unique($feeds);
         sort($feeds);
     }
+
     catch (Exception $e) {
-        $data[$u] = null;
         $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getMessage(), $e->getCode(), $u);
         $errors[] = $msg;
         debug($msg);
         continue;
     }
     if (!empty($feeds)) {
-        $data[$u] = $feeds;
+        $urls[$url] = $feeds;
         debug("Feeds found for URL:\n\t$u", $feeds);
     }
 }
+
+$data = $urls;
 
 //-----------------------------------------------------------------------------
 // final output of data
@@ -347,7 +354,7 @@ if (!empty($output)) {
                 $txt = '';
                 foreach ($output as $url => $feeds) {
                     $txt .= "\n$url\n";
-                    if (null !== $feeds) {
+                    if (!empty($feeds)) {
                         foreach ($feeds as $url) {
                             $txt .= "\t$url\n";
                         }
@@ -373,7 +380,7 @@ if (!empty($output)) {
                 $txt = '';
                 foreach ($output as $url => $feeds) {
                     $txt .= "\n$url\n";
-                    if (null !== $feeds) {
+                    if (!empty($feeds)) {
                         foreach ($feeds as $url) {
                             $txt .= "\t$url\n";
                         }
