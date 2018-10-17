@@ -18,7 +18,12 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 }
 ```
 
-### Command-line options
+## Installation
+
+- `composer require imelgrat/feed-finder`
+- `composer dump`
+
+## Command-line options
 
 ```
 Usage: php feedex.php

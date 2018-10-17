@@ -223,6 +223,8 @@ if (!empty($input_filename)) {
         }
         verbose(sprintf("Found %d valid URL(s) in input file:\n\t%s", count($urls), $input_filename), $urls);
     }
+    sort($urls);
+    $urls = array_unique($urls);
 }
 
 // if no URLs found in file, check if single URL fed in
@@ -250,6 +252,7 @@ foreach ($urls as $u) {
     $target_url = url_resolve($u);
     if (empty($target_url) || is_numeric($target_url)) {
         $errors[] = "Bad URL for:\n\t$u\n\t$target_url";
+        continue;
     }
     if ($u !== $target_url) {
         $u = $target_url;
@@ -257,10 +260,11 @@ foreach ($urls as $u) {
     $ff->setURL($u);
     $feeds = $ff->getFeeds();
     if (empty($feeds)) {
-        debug("Feeds found for URL:\n\t$u", $feeds);
+        debug("No feeds found for URL:\n\t$u");
         $errors[] = "No feeds found for:\n\t$u";
     } else {
         $data[$u] = $feeds;
+        debug("Feeds found for URL:\n\t$u", $feeds);
     }
 }
 
