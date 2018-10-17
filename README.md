@@ -149,6 +149,7 @@ Accepted request input parameters: 'url=', 'format='
 
 ### Webservice Example
 
+This will only check a single URL.
 
 `http://127.0.0.1:12312/feedex.php?url=http://example.com/blog/public&format=json`
 
@@ -161,6 +162,17 @@ Result:
         "http:\/\/example.com\/comments\/feed\/"
     ]
 }
+```
+
+Using `format=text`
+
+`http://127.0.0.1:12312/feedex.php?url=http://example.com/blog/public&format=txt`
+
+```
+http://example.com.com/
+	http://example.com.com/comments/feed/
+	http://example.com.com/feed/
+	http://example.com.com/home/feed/
 ```
 
 ----

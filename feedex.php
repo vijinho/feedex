@@ -253,7 +253,7 @@ if (empty($urls)) {
         $errors[] = "Invalid URL specified: $url";
         goto errors;
     }
-    $urls = [$url];
+    $urls = [$url => []];
 }
 
 $output_filename = !empty($options['filename']) ? $options['filename'] : '';
@@ -267,9 +267,11 @@ $total_urls = count($urls);
 $i = 0;
 foreach ($urls as $url => $existing_feeds) {
     $i++;
-    if (count($existing_feeds) && !$do['force-check']) {
+    if (count($existing_feeds)) {
+        if (!$do['force-check']) {
+            continue;
+        }
         debug("Forced re-check of feeds for:\n\t$url");
-        continue;
     }
     $feeds = [];
     $u = $url;
@@ -294,17 +296,14 @@ foreach ($urls as $url => $existing_feeds) {
             $resource->getContent()
         );
         // remove multiple feed entries
-        $feeds = array_unique($feeds);
-        sort($feeds);
-    }
-
-    catch (Exception $e) {
-        $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getMessage(), $e->getCode(), $u);
+    } catch (Exception $e) {
+        $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getCode(), $e->getMessage(), $u);
         $errors[] = $msg;
         debug($msg);
-        continue;
     }
     if (!empty($feeds)) {
+        $feeds = array_unique($feeds);
+        sort($feeds);
         $urls[$url] = $feeds;
         debug("Feeds found for URL:\n\t$u", $feeds);
     }
@@ -813,12 +812,15 @@ function url_resolve($url, $options = [])
             }
         }
     }
+
     if ($status === 0 || ($status == 6 && !is_numeric($target_url)) && !empty($target_url)) {
         $curl_http_status = "$curl $curl_options -s -o /dev/null -w %{http_code} " . escapeshellarg($target_url);
         $output           = [];
         exec($curl_http_status, $output, $status);
     }
+
     $return     = ($status === 0) ? $target_url : $status;
     $urls[$url] = $return; // cache in static var
+
     return $return;
 }
