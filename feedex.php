@@ -151,7 +151,14 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
     errors:
     if (!empty($errors)) {
         if (is_array($errors)) {
-            echo json_encode(['errors' => $errors], JSON_PRETTY_PRINT);
+            if ('json' === OUTPUT_FORMAT) {
+                echo json_encode(['errors' => $errors], JSON_PRETTY_PRINT);
+            } else {
+                $errors = to_charset($errors);
+                foreach ($errors as $error) {
+                    verbose($error);
+                }
+            }
         }
     } else {
         output("\nNo errors occurred.\n");
@@ -273,11 +280,6 @@ foreach ($urls as $u) {
 
 output:
 
-// display any errors
-if (!empty($errors)) {
-    goto errors;
-}
-
 // set data to write to file
 if (is_array($data) && !empty($data)) {
     $output = $data;
@@ -316,12 +318,12 @@ if (!empty($output)) {
             case 'txt':
                 $txt = '';
                 foreach ($output as $url => $feeds) {
-                    $txt .= "$url\n";
+                    $txt .= "\n$url\n";
                     foreach ($feeds as $url) {
                         $txt .= "\t$url\n";
                     }
                 }
-                file_put_contents($file, $txt);
+                file_put_contents($file, trim($txt));
                 break;
         }
 
@@ -340,21 +342,28 @@ if (!empty($output)) {
             case 'txt':
                 $txt = '';
                 foreach ($output as $url => $feeds) {
-                    $txt .= "$url\n";
+                    $txt .= "\n$url\n";
                     foreach ($feeds as $url) {
                         $txt .= "\t$url\n";
                     }
                 }
-                echo to_charset($txt);
+                echo to_charset(trim($txt));
                 break;
         }
     }
 }
 
+// display any errors
+if (!empty($errors)) {
+    goto errors;
+}
+
+
 end:
 
 debug(sprintf("Memory used (%s) MB (current/peak).", get_memory_used()));
 output("\n");
+
 exit;
 
 //-----------------------------------------------------------------------------
