@@ -297,8 +297,10 @@ foreach ($urls as $u) {
         debug($msg);
         continue;
     }
-    $data[$u] = $feeds;
-    debug("Feeds found for URL:\n\t$u", $feeds);
+    if (!empty($feeds)) {
+        $data[$u] = $feeds;
+        debug("Feeds found for URL:\n\t$u", $feeds);
+    }
 }
 
 //-----------------------------------------------------------------------------
