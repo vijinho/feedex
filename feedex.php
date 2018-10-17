@@ -90,7 +90,7 @@ switch (php_sapi_name()) {
 // : - required, :: - optional
 
 $options = getopt("hvdu:f:d:ei:g", [
-    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:'
+    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'dir:', 'filename:', 'input:', 'force-check'
 ]);
 
 $do = [];
@@ -100,7 +100,8 @@ foreach ([
  'debug'   => ['d', 'debug'],
  'echo'    => ['e', 'echo'],
  'url'     => ['u', 'url'],
- 'input'   => ['i', 'input']
+ 'input'   => ['i', 'input'],
+ 'force-check'   => [null, 'force-check']
 ] as $i => $opts) {
     $do[$i] = (int) (array_key_exists($opts[0], $options) || array_key_exists($opts[1],
             $options));
@@ -266,7 +267,8 @@ $total_urls = count($urls);
 $i = 0;
 foreach ($urls as $url => $existing_feeds) {
     $i++;
-    if (count($existing_feeds)) {
+    if (count($existing_feeds) && !$do['force-check']) {
+        debug("Forced re-check of feeds for:\n\t$url");
         continue;
     }
     $feeds = [];

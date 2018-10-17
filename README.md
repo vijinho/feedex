@@ -26,7 +26,6 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 ## Command-line options
 
 ```
-Usage: php feedex.php
 Extract and save feeds from URL(s)
 (Specifying any other unknown argument options will be ignored.)
 
@@ -42,6 +41,8 @@ Extract and save feeds from URL(s)
 ```
 
 ## Output Format
+
+The script can take-in previous txt format output and re-use it as input, checking only urls where there are no existing feeds.
 
 ### txt
 
