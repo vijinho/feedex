@@ -242,7 +242,7 @@ if (!empty($input_filename)) {
         if (empty($urls)) {
             $errors[] = "No URLs not found in input file:\n\t$input_filename";
         }
-        verbose(sprintf("Found %d valid URL(s) in input file:\n\t%s", count($urls), $input_filename), $urls);
+        debug(sprintf("Found %d valid URL(s) in input file:\n\t%s", count($urls), $input_filename), $urls);
     }
 }
 
