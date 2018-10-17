@@ -270,6 +270,9 @@ foreach ($urls as $url => $existing_feeds) {
     $target_url = url_resolve($u);
     if (empty($target_url) || is_numeric($target_url)) {
         $errors[] = "Bad URL for:\n\t$u\n\t$target_url";
+        if ($do['clear']) {
+            unset($urls[$url]);
+        }
         continue;
     }
 
