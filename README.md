@@ -207,7 +207,17 @@ Reads in 'urls.txt', extracts feeds and writes to 'results.opml', debug mode pip
 Contents of 'results.opml':
 
 ```
-
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>FeedEx</title>
+  </head>
+  <body>
+    <outline type="rss" text="Stories by RT Digital on Medium" xmlUrl="https://medium.com/feed/@rtdublindigital" title="Stories by RT Digital on Medium" description="Stories by RT Digital on Medium" htmlUrl="https://medium.com/@rtdublindigital?source=rss-dbca3f85c5a3------2"/>
+    <outline type="rss" text="ChinaPower Project" xmlUrl="https://chinapower.csis.org/feed/" title="ChinaPower Project" description="Unpacking the complexity of China's rise" htmlUrl="https://chinapower.csis.org/"/>
+<!-- SNIP! -->
+  </body>
+</opml>    
 ```
 
 ## Running as a webservice
