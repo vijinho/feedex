@@ -267,6 +267,7 @@ foreach ($urls as $u) {
     $ff->setURL($u);
     $feeds = $ff->getFeeds();
     if (empty($feeds)) {
+        $data[$u] = null;
         debug("No feeds found for URL:\n\t$u");
         $errors[] = "No feeds found for:\n\t$u";
     } else {
@@ -319,8 +320,10 @@ if (!empty($output)) {
                 $txt = '';
                 foreach ($output as $url => $feeds) {
                     $txt .= "\n$url\n";
-                    foreach ($feeds as $url) {
-                        $txt .= "\t$url\n";
+                    if (null !== $feeds) {
+                        foreach ($feeds as $url) {
+                            $txt .= "\t$url\n";
+                        }
                     }
                 }
                 file_put_contents($file, trim($txt));
@@ -343,8 +346,10 @@ if (!empty($output)) {
                 $txt = '';
                 foreach ($output as $url => $feeds) {
                     $txt .= "\n$url\n";
-                    foreach ($feeds as $url) {
-                        $txt .= "\t$url\n";
+                    if (null !== $feeds) {
+                        foreach ($feeds as $url) {
+                            $txt .= "\t$url\n";
+                        }
                     }
                 }
                 echo to_charset(trim($txt));
