@@ -7,6 +7,7 @@
  * @copyright (c) Copyright 2018 Vijay Mahrra
  * @license GPLv3 (http://www.gnu.org/licenses/gpl-3.0.html)
  * @url https://github.com/vijinho/feedex
+ * @see https://github.com/nicolus/picoFeed
  */
 
 date_default_timezone_set('UTC');
@@ -31,8 +32,8 @@ if (empty($commands)) {
 }
 
 
-//require_once dirname(__FILE__) . '/vendor/autoload.php';
-require_once dirname(__FILE__) . '/vendor/imelgrat/feed-finder/src/feed-finder.php';
+require_once dirname(__FILE__) . '/vendor/autoload.php';
+use PicoFeed\Reader\Reader;
 
 //-----------------------------------------------------------------------------
 // detect if run in web mode or cli
@@ -262,9 +263,8 @@ $output_filename = !empty($options['filename']) ? $options['filename'] : '';
 
 //-----------------------------------------------------------------------------
 // MAIN
-
+$reader = new Reader;
 $data = [];
-$ff = new FeedFinder();
 $total_urls = count($urls);
 $i = 0;
 foreach ($urls as $u) {
@@ -279,16 +279,26 @@ foreach ($urls as $u) {
     if ($u !== $target_url) {
         $u = $target_url;
     }
-    $ff->setURL($u);
-    $feeds = $ff->getFeeds();
-    if (empty($feeds)) {
-        $data[$u] = null;
-        debug("No feeds found for URL:\n\t$u");
-        $errors[] = "No feeds found for:\n\t$u";
-    } else {
-        $data[$u] = $feeds;
-        debug("Feeds found for URL:\n\t$u", $feeds);
+
+    try {
+        $resource = $reader->download($u);
+        $feeds = $reader->find(
+            $resource->getUrl(),
+            $resource->getContent()
+        );
+        // remove multiple feed entries
+        $feeds = array_unique($feeds);
+        sort($feeds);
     }
+    catch (Exception $e) {
+        $data[$u] = null;
+        $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getMessage(), $e->getCode(), $u);
+        $errors[] = $msg;
+        debug($msg);
+        continue;
+    }
+    $data[$u] = $feeds;
+    debug("Feeds found for URL:\n\t$u", $feeds);
 }
 
 //-----------------------------------------------------------------------------

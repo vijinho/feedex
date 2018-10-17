@@ -3,7 +3,7 @@
 PHP CLI and WWW tool to extract and save feeds from URL(s)
 
 - Full-resolves URL before attemptin to extract feed URLs
-- Extracts the URLs of RSS (1.0 and 2.0) and ATOM feeds associated to a page, as well as OPML outline documents with [imelgrat/feed-finder](https://github.com/imelgrat/feed-finder)
+- Extracts the URLs of RSS (1.0 and 2.0) and ATOM feeds associated to a page, as well as OPML outline documents with [nicolus/picofeed](https://github.com/nicolus/picoFeed)
 - Runs on the command-line
 - Can be called as a stand-alone webservice using the php command line built-in server
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
@@ -20,7 +20,7 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 
 ## Installation
 
-- `composer require imelgrat/feed-finder`
+- `composer require nicolus/picofeed`
 - `composer dump`
 
 ## Command-line options

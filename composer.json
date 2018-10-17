@@ -1,5 +1,5 @@
 {
     "require": {
-        "imelgrat/feed-finder": "^2.0"
+        "nicolus/picofeed": "^0.1.35"
     }
 }
