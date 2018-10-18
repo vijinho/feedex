@@ -9,7 +9,6 @@
  * @url https://github.com/vijinho/feedex
  * @see https://github.com/nicolus/picoFeed
  */
-
 date_default_timezone_set('UTC');
 ini_set('default_charset', 'utf-8');
 ini_set('mbstring.encoding_translation', 'On');
@@ -20,8 +19,8 @@ ini_set('auto_detect_line_endings', TRUE);
 // required commands check
 
 $requirements = [
-    'curl'    => 'tool: curl - https://curl.haxx.se',
-    'wget'    => 'tool: wget - https://www.gnu.org/software/wget/',
+    'curl' => 'tool: curl - https://curl.haxx.se',
+    'wget' => 'tool: wget - https://www.gnu.org/software/wget/',
 ];
 
 $commands = get_commands($requirements);
@@ -32,7 +31,6 @@ if (empty($commands)) {
 }
 
 require_once dirname(__FILE__) . '/vendor/autoload.php';
-
 // reader for extracting feeds
 use PicoFeed\Reader\Reader;
 use PicoFeed\PicoFeedException;
@@ -92,20 +90,22 @@ switch (php_sapi_name()) {
 // see https://secure.php.net/manual/en/function.getopt.php
 // : - required, :: - optional
 
-$options = getopt("hvdu:f:d:ei:gc", [
-    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'filename:', 'input:', 'force-check', 'clear'
-]);
+$options = getopt("hvdu:f:d:ei:gc",
+    [
+    'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'filename:', 'input:',
+    'force-check', 'clear'
+    ]);
 
 $do = [];
 foreach ([
- 'help'    => ['h', 'help'],
- 'verbose' => ['v', 'verbose'],
- 'debug'   => ['d', 'debug'],
- 'echo'    => ['e', 'echo'],
- 'url'     => ['u', 'url'],
- 'input'   => ['i', 'input'],
- 'clear'   => ['c', 'clear'],
- 'force-check'   => [null, 'force-check']
+'help'        => ['h', 'help'],
+ 'verbose'     => ['v', 'verbose'],
+ 'debug'       => ['d', 'debug'],
+ 'echo'        => ['e', 'echo'],
+ 'url'         => ['u', 'url'],
+ 'input'       => ['i', 'input'],
+ 'clear'       => ['c', 'clear'],
+ 'force-check' => [null, 'force-check']
 ] as $i => $opts) {
     $do[$i] = (int) (array_key_exists($opts[0], $options) || array_key_exists($opts[1],
             $options));
@@ -138,7 +138,7 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
     }
 
     print join("\n",
-    [
+            [
         "Usage: php feedex.php",
         "Extract and save feeds from URL(s)",
         "(Specifying any other unknown argument options will be ignored.)\n",
@@ -180,7 +180,6 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
 
 $errors = []; // errors to be output if a problem occurred
 $output = []; // data to be output at the end
-
 //-----------------------------------------------------------------------------
 // output format
 
@@ -207,7 +206,6 @@ verbose("OUTPUT_FORMAT: $format");
 
 //-----------------------------------------------------------------------------
 // file for output
-
 // read in URLs from file
 $input_filename = !empty($options['input']) ? $options['input'] : '';
 $input_filename = !empty($options['i']) ? $options['i'] : $input_filename;
@@ -218,9 +216,10 @@ if (!empty($input_filename)) {
     } else {
         // check if we are loading .js or .json file:
         if (false !== stristr($input_filename, '.js')) {
-            $urls      = json_load($input_filename);
+            $urls = json_load($input_filename);
             if (!is_string($urls)) {
-                verbose(sprintf("Loaded previously saved urls from:\n\t%s", $input_filename));
+                verbose(sprintf("Loaded previously saved urls from:\n\t%s",
+                        $input_filename));
             } else if (empty($urls)) {
                 $errors[] = $urls;
             }
@@ -247,7 +246,8 @@ if (!empty($input_filename)) {
                     $urls[$key][] = $s->getFeedUrl();
                 }
             } catch (Exception $e) {
-                $errors[] = sprintf("Error %d: %s", $e->getCode(), $e->getMessage());
+                $errors[] = sprintf("Error %d: %s", $e->getCode(),
+                    $e->getMessage());
             }
         } else {
             // load in urls text file
@@ -279,14 +279,15 @@ if (!empty($input_filename)) {
                 if (!is_array($values)) {
                     continue;
                 }
-                $values = array_unique($values);
+                $values     = array_unique($values);
                 $urls[$url] = $values;
             }
         } else {
             $errors[] = "No URLs not found in input file:\n\t$input_filename";
             goto errors;
         }
-        debug(sprintf("Found %d valid URL(s) in input file:\n\t%s", count($urls), $input_filename), $urls);
+        debug(sprintf("Found %d valid URL(s) in input file:\n\t%s",
+                count($urls), $input_filename), $urls);
     }
 }
 
@@ -305,11 +306,11 @@ $output_filename = !empty($options['filename']) ? $options['filename'] : '';
 //-----------------------------------------------------------------------------
 // MAIN
 
-$reader = new Reader;
-$data = [];
+$reader     = new Reader;
+$data       = [];
 $total_urls = count($urls);
-$i = 0;
-$urls = array_shuffle($urls); // randomize check order
+$i          = 0;
+$urls       = array_shuffle($urls); // randomize check order
 foreach ($urls as $url => $existing_feeds) {
     $i++;
     if (count($existing_feeds)) {
@@ -318,8 +319,8 @@ foreach ($urls as $url => $existing_feeds) {
         }
         debug("Forced re-check of feeds for:\n\t$url");
     }
-    $feeds = [];
-    $u = $url;
+    $feeds      = [];
+    $u          = $url;
     debug("Checking URL ($i/$total_urls):\n\t$u");
     $target_url = url_resolve($u);
     if (empty($target_url) || is_numeric($target_url)) {
@@ -333,19 +334,19 @@ foreach ($urls as $url => $existing_feeds) {
     // update URL
     if ($u !== $target_url) {
         unset($urls[$url]);
-        $u = $target_url;
+        $u        = $target_url;
         $urls[$u] = [];
     }
 
     try {
         $resource = $reader->download($u);
-        $feeds = $reader->find(
-            $resource->getUrl(),
-            $resource->getContent()
+        $feeds    = $reader->find(
+            $resource->getUrl(), $resource->getContent()
         );
         // remove multiple feed entries
     } catch (Exception $e) {
-        $msg = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getCode(), $e->getMessage(), $u);
+        $msg      = sprintf("Error %d: '%s' for URL:\n\t%s", $e->getCode(),
+            $e->getMessage(), $u);
         $errors[] = $msg;
         debug($msg);
         if ($do['clear']) {
@@ -358,7 +359,7 @@ foreach ($urls as $url => $existing_feeds) {
             unset($urls[$url]);
         }
     } else {
-        $feeds = array_unique($feeds);
+        $feeds      = array_unique($feeds);
         sort($feeds);
         $urls[$url] = $feeds;
         debug("Feeds found for URL:\n\t$u", $feeds);
@@ -370,7 +371,6 @@ if (OUTPUT_FORMAT !== 'opml') {
     $data = $urls;
     goto output;
 }
-
 //-----------------------------------------------------------------------------
 // create OPML
 
@@ -399,23 +399,22 @@ foreach ($urls as $url => $feeds) {
 
             // fetch feed
             $resource = $reader->download($feed);
-            $parser = $reader->getParser(
-                $resource->getUrl(),
-                $resource->getContent(),
+            $parser   = $reader->getParser(
+                $resource->getUrl(), $resource->getContent(),
                 $resource->getEncoding()
             );
-            $feed = $parser->execute();
+            $feed     = $parser->execute();
 
             // create subscription list entry
             $subscriptionList->addSubscription(Subscription::create()
-                ->setTitle($feed->getTitle())
-                ->setFeedUrl($feed->getFeedUrl())
-                ->setSiteUrl($feed->getSiteUrl())
-                ->setDescription($feed->getDescription())
+                    ->setTitle($feed->getTitle())
+                    ->setFeedUrl($feed->getFeedUrl())
+                    ->setSiteUrl($feed->getSiteUrl())
+                    ->setDescription($feed->getDescription())
             );
-
         } catch (PicoFeedException $e) {
-            $msg = sprintf("Error getting feed %d: '%s' for URL:\n\t%s", $e->getCode(), $e->getMessage(), $feed);
+            $msg      = sprintf("Error getting feed %d: '%s' for URL:\n\t%s",
+                $e->getCode(), $e->getMessage(), $feed);
             $errors[] = $msg;
             debug($msg);
         }
@@ -424,7 +423,7 @@ foreach ($urls as $url => $feeds) {
 
 // generate opml XML as text
 $opmlBuilder = new SubscriptionListBuilder($subscriptionList);
-$data = $opmlBuilder->build();
+$data        = $opmlBuilder->build();
 
 //-----------------------------------------------------------------------------
 // final output of data
@@ -494,7 +493,6 @@ if (!empty($output)) {
                 }
                 break;
         }
-
     }
 
     // output data if --echo
@@ -1001,3 +999,4 @@ function url_resolve($url, $options = [])
 
     return $return;
 }
+
