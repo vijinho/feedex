@@ -10,6 +10,7 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 - Can output the result if successful to *stdout*
 - Output file can be used as input when using options 'txt' and '[json](https://json.org/)', 'opml' and URLs can be re-checked with --force option.
 - Can output found feeds as an [opml](http://dev.opml.org/) file.
+- Can output data to markdown .md for easy sharing of podcast information (output-only --format)
 - Errors are output in JSON as 'errors' with just a bunch of strings
 
 ```

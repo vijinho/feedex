@@ -149,7 +149,7 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "\t-i   --input={filename}            (Required or -u) Text file of URLs, one-per-line to read in and process.",
         "\t-c,  --clear                       (Optional) Clear-out URLs which have no feeds before writing output file.",
         "\t-e,  --echo                        (Optional) Echo/output the result to stdout if successful",
-        "\t-f   --format={txt|json|php|opml}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml",
+        "\t-f   --format={txt|json|php|opml|md}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml|markdown",
         "\t     --filename={output}           (Optional) Filename for output data from operation",
         "\t     --force-check                 (Optional) Forcibly check URLs, even for those which already have feeds in the input file.",
     ]);
@@ -187,7 +187,13 @@ $format = '';
 if (!empty($options['format'])) {
     $format = $options['format'];
 }
+if (!empty($options['f'])) {
+    $format = $options['f'];
+}
 switch ($format) {
+    case 'md':
+        $format = 'md';
+        break;
     case 'opml':
         $format = 'opml';
         break;
@@ -473,6 +479,25 @@ if (!empty($output)) {
                 }
                 break;
 
+            case 'md':
+                $txt = '';
+                foreach ($output as $url => $feeds) {
+                    $txt .= sprintf("- [%s](%s)\n", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                    if (!empty($feeds)) {
+                        foreach ($feeds as $u) {
+                            $txt .= sprintf("\t- Subscribe: [%s](%s)\n", $u, $u);
+                        }
+                    }
+                }
+                if (file_put_contents($file, $txt)) {
+                    verbose(sprintf("Markdown written to output file:\n\t%s (%d bytes)\n",
+                            $file, filesize($file)));
+                } else {
+                    $errors[] = "\nFailed writing markdown output file:\n\t$file\n";
+                    goto errors;
+                }
+                break;
+
             default:
             case 'txt':
                 $txt = '';
@@ -506,6 +531,18 @@ if (!empty($output)) {
                 break;
             case 'php':
                 echo serialize(to_charset($output));
+                break;
+            case 'md':
+                $txt = '';
+                foreach ($output as $url => $feeds) {
+                    $txt .= sprintf("- [%s](%s)\n", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                    if (!empty($feeds)) {
+                        foreach ($feeds as $u) {
+                            $txt .= sprintf("\t- Subscribe: [%s](%s)\n", $u, $u);
+                        }
+                    }
+                }
+                echo to_charset(trim($txt));
                 break;
             default:
             case 'txt':
