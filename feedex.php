@@ -274,7 +274,15 @@ if (!empty($input_filename)) {
                 }
             }
         }
-        if (empty($urls)) {
+        if (!empty($urls)) {
+            foreach ($urls as $url => $values) {
+                if (!is_array($values)) {
+                    continue;
+                }
+                $values = array_unique($values);
+                $urls[$url] = $values;
+            }
+        } else {
             $errors[] = "No URLs not found in input file:\n\t$input_filename";
             goto errors;
         }
