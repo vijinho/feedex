@@ -126,6 +126,38 @@ http://grahamhancock.com/blog/
 }
 ```
 
+### OPML file to Markdown
+
+```
+# Podcasts
+
+`php feedex.php --input=audio.opml -e -fmd --filename=podcasts.md`
+
+```
+---
+title: Title 18-10-2018
+date: 18-10-2018 18:28
+slug: 2018-10-18-title
+Taxonomy:
+        category: blog
+        tag: [blog]
+        author:
+---
+# Title
+
+## richieallen.podomatic.com
+### [The Richie Allen Show](https://richieallen.podomatic.com/)
+The Richie Allen Show is the most listened to independent news radio show in Europe. The show airs Mon - Thurs at 5 PM UK Time & 11 AM Sundays on richieallen.co.uk fabradiointernational.com, triggerwarning.tv and TuneIn Radio. Richie interviews men and women who have vital information that is being suppressed by mainstream media. The show is often controversial but always fair and balanced. Listen now.
+- Subscribe rss: [https://richieallen.podomatic.com/rss2.xml](https://richieallen.podomatic.com/rss2.xml)
+
+## rt.com
+### [RT - Daily news](https://www.rt.com/)
+RT : Today
+- Subscribe rss: [https://www.rt.com/rss/](https://www.rt.com/rss/)
+
+Podcast list generated with [vijinho/feedex](https://github.com/vijinho/feedex)
+```
+
 # Examples
 
 Find feeds for URL http://example.com/blog/public outputting as 'txt'.
