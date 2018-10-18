@@ -36,6 +36,7 @@ require_once dirname(__FILE__) . '/vendor/autoload.php';
 // reader for extracting feeds
 use PicoFeed\Reader\Reader;
 use PicoFeed\PicoFeedException;
+use PicoFeed\Serialization\SubscriptionListParser;
 
 //-----------------------------------------------------------------------------
 // detect if run in web mode or cli
@@ -222,6 +223,31 @@ if (!empty($input_filename)) {
                 verbose(sprintf("Loaded previously saved urls from:\n\t%s", $input_filename));
             } else if (empty($urls)) {
                 $errors[] = $urls;
+            }
+        } else if (false !== stristr($input_filename, '.opml')) {
+            $data = file_load($input_filename);
+            if (empty($data)) {
+                $errors[] = "Failed to load data from: $input_filename";
+                goto errors;
+            }
+            try {
+                $subscriptionList = SubscriptionListParser::create($data)->parse();
+                if (!is_array($subscriptionList->subscriptions)) {
+                    $errors[] = "Failed to load and parse OPML data from: $input_filename";
+                    goto errors;
+                }
+                unset($data);
+                // generate simple format for processing, URL => feeds
+                $urls = [];
+                foreach ($subscriptionList->subscriptions as $s) {
+                    $key = $s->getSiteUrl();
+                    if (!array_key_exists($key, $urls)) {
+                        $urls[$key] = [];
+                    }
+                    $urls[$key][] = $s->getFeedUrl();
+                }
+            } catch (Exception $e) {
+                $errors[] = sprintf("Error %d: %s", $e->getCode(), $e->getMessage());
             }
         } else {
             // load in urls text file
@@ -739,16 +765,38 @@ function to_charset($data, $to_charset = 'UTF-8', $from_charset = 'auto')
  */
 function json_load($file)
 {
-    $data = [];
-    if (file_exists($file)) {
-        $data = to_charset(file_get_contents($file));
-        $data = json_decode(
-            mb_convert_encoding($data, 'UTF-8', "auto"), true, 512,
-            JSON_OBJECT_AS_ARRAY || JSON_BIGINT_AS_STRING
-        );
+    $data = file_load($file);
+    if (empty($data)) {
+        return "Failed to load file: $file";
     }
+    $data = json_decode($data, true, 512,
+        JSON_OBJECT_AS_ARRAY || JSON_BIGINT_AS_STRING
+    );
     if (null === $data) {
         return json_last_error_msg();
+    }
+    if (is_array($data)) {
+        $data = to_charset($data);
+    }
+    return $data;
+}
+
+
+/**
+ * Load a  file and return the content
+ *
+ * @param  string $file the filename
+ * @return string|array error string or data array
+ */
+function file_load($file)
+{
+    $data = [];
+    if (file_exists($file)) {
+        if (0 === filesize($file)) {
+            return 'File is empty.';
+        }
+        $data = to_charset(file_get_contents($file));
+        $data = mb_convert_encoding($data, 'UTF-8', "auto");
     }
     if (is_array($data)) {
         $data = to_charset($data);
@@ -795,13 +843,11 @@ function json_save($file, $data, $prepend = '', $append = '')
  */
 function serialize_load($file)
 {
-    if (0 === filesize($file)) {
-        return 'File is empty.';
+    $data = file_load($file);
+    if (empty($data)) {
+        return "Failed to load file: $file";
     }
-    $data = [];
-    if (file_exists($file)) {
-        $data = unserialize(file_get_contents($file));
-    }
+    $data = unserialize(file_get_contents($file));
     if (false === $data) {
         return 'Unserialize failed.';
     }

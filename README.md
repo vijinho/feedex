@@ -8,8 +8,8 @@ PHP CLI and WWW tool to extract and save feeds from URL(s)
 - Can be called as a stand-alone webservice using the php command line built-in server
 - All messages when running with `--debug` or `--verbose` are to *stderr* to avoid interference with *stdout*
 - Can output the result if successful to *stdout*
-- Output file can be used as input when using options 'txt' and 'json' and URLs can be re-checked with --force option.
-- Can output found feeds as an .opml file.
+- Output file can be used as input when using options 'txt' and '[json](https://json.org/)', 'opml' and URLs can be re-checked with --force option.
+- Can output found feeds as an [opml](http://dev.opml.org/) file.
 - Errors are output in JSON as 'errors' with just a bunch of strings
 
 ```
@@ -32,17 +32,17 @@ Usage: php feedex.php
 Extract and save feeds from URL(s)
 (Specifying any other unknown argument options will be ignored.)
 
-        -h,  --help                   Display this help and exit
-        -v,  --verbose                Run in verbose mode
-        -d,  --debug                  Run in debug mode (implies also -v, --verbose)
-        -u,  --url=<url>              (Required or -i) URL to check for feeds)
-        -i   --input={filename}       (Required or -u) Text file of URLs, one-per-line to read in and process.
-        -c,  --clear                  (Optional) Clear-out URLs which have no feeds before writing output file.
-        -e,  --echo                   (Optional) Echo/output the result to stdout if successful
-        -f   --format={txt|json|php}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)
-             --filename={output}      (Optional) Filename for output data from operation
-             --force-check            (Optional) Forcibly check URLs, even for those which already have feeds in the input file.
-```
+        -h,  --help                        Display this help and exit
+        -v,  --verbose                     Run in verbose mode
+        -d,  --debug                       Run in debug mode (implies also -v, --verbose)
+        -u,  --url=<url>                   (Required or -i) URL to check for feeds)
+        -i   --input={filename}            (Required or -u) Text file of URLs, one-per-line to read in and process.
+        -c,  --clear                       (Optional) Clear-out URLs which have no feeds before writing output file.
+        -e,  --echo                        (Optional) Echo/output the result to stdout if successful
+        -f   --format={txt|json|php|opml}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml
+             --filename={output}           (Optional) Filename for output data from operation
+             --force-check                 (Optional) Forcibly check URLs, even for those which already have feeds in the input file.
+ ```
 
 ## Example output Format
 
