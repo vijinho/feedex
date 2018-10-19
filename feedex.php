@@ -214,8 +214,8 @@ define('OUTPUT_FORMAT', $format);
 verbose("OUTPUT_FORMAT: $format");
 
 //-----------------------------------------------------------------------------
-// file for output
 // read in URLs from file
+$output_filename = !empty($options['filename']) ? $options['filename'] : '';
 $input_filename = !empty($options['input']) ? $options['input'] : '';
 $input_filename = !empty($options['i']) ? $options['i'] : $input_filename;
 if (!empty($input_filename)) {
@@ -317,8 +317,6 @@ if (empty($urls)) {
     }
     $urls = [$url => []];
 }
-
-$output_filename = !empty($options['filename']) ? $options['filename'] : '';
 
 //-----------------------------------------------------------------------------
 // MAIN
@@ -494,15 +492,17 @@ if (!empty($output)) {
                 $last_host = '';
                 $txt = sprintf("\n---\ntitle: Title %s\ndate: %s\nslug: %s-title\nTaxonomy:\n\tcategory: blog\n\ttag: [blog]\n\tauthor: \n---\n# Title",  date('d-m-Y'), date('d-m-Y H:i'), date('Y-m-d'));
                 if (empty($subscriptionList)) {
-                    $p = parse_url($url);
-                    $host = $p['host'];
-                    if ($last_host !== $host) {
-                        $txt .= sprintf("\n##[%s](%s)", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
-                        $last_host = $host;
-                    }
-                    if (!empty($feeds)) {
-                        foreach ($feeds as $u) {
-                            $txt .= sprintf("\n - Subscribe: [%s](%s)\n", $u, $u);
+                    foreach ($output as $url => $feeds) {
+                        $p = parse_url($url);
+                        $host = $p['host'];
+                        if ($last_host !== $host) {
+                            $txt .= sprintf("\n##[%s](%s)", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                            $last_host = $host;
+                        }
+                        if (!empty($feeds)) {
+                            foreach ($feeds as $u) {
+                                $txt .= sprintf("\n - Subscribe: [%s](%s)", $u, $u);
+                            }
                         }
                     }
                 } else {
