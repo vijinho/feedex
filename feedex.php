@@ -491,22 +491,29 @@ if (!empty($output)) {
                 break;
 
             case 'md':
+                $last_host = '';
                 $txt = sprintf("\n---\ntitle: Title %s\ndate: %s\nslug: %s-title\nTaxonomy:\n\tcategory: blog\n\ttag: [blog]\n\tauthor: \n---\n# Title",  date('d-m-Y'), date('d-m-Y H:i'), date('Y-m-d'));
                 if (empty($subscriptionList)) {
-                    foreach ($output as $url => $feeds) {
-                        $txt .= sprintf("\n##[%s](%s)\n", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
-                        if (!empty($feeds)) {
-                            foreach ($feeds as $u) {
-                                $txt .= sprintf(" - Subscribe: [%s](%s)\n", $u, $u);
-                            }
+                    $p = parse_url($url);
+                    $host = $p['host'];
+                    if ($last_host !== $host) {
+                        $txt .= sprintf("\n##[%s](%s)", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                        $last_host = $host;
+                    }
+                    if (!empty($feeds)) {
+                        foreach ($feeds as $u) {
+                            $txt .= sprintf("\n - Subscribe: [%s](%s)\n", $u, $u);
                         }
                     }
                 } else {
                     foreach ($subscriptionList->subscriptions as $s) {
                         $p = parse_url($s->getSiteUrl());
                         $host = str_replace('www.', '', $p['host']);
-                        $txt .= sprintf("\n\n## %s\n### [%s](%s)\n%s\n", $host, $s->getTitle(), $s->getSiteUrl(), $s->getDescription());
-                        $txt .= sprintf(trim(" - Subscribe: %s: [%s](%s) %s"), $s->getType(), $s->getFeedUrl(), $s->getFeedUrl(), $s->getCategory());
+                        if ($last_host !== $host) {
+                            $txt .= sprintf("\n\n## %s\n### [%s](%s)\n%s", $host, $s->getTitle(), $s->getSiteUrl(), $s->getDescription());
+                            $last_host = $host;
+                        }
+                        $txt .= sprintf("\n - Subscribe: %s: [%s](%s) %s", $s->getType(), $s->getFeedUrl(), $s->getFeedUrl(), $s->getCategory());
                     }
                 }
                 $txt .= "\n\nTitle list generated with [vijinho/feedex](https://github.com/vijinho/feedex)";
@@ -554,13 +561,19 @@ if (!empty($output)) {
                 echo serialize(to_charset($output));
                 break;
             case 'md':
+                $last_host = '';
                 $txt = sprintf("\n---\ntitle: Title %s\ndate: %s\nslug: %s-title\nTaxonomy:\n\tcategory: blog\n\ttag: [blog]\n\tauthor: \n---\n# Title",  date('d-m-Y'), date('d-m-Y H:i'), date('Y-m-d'));
                 if (empty($subscriptionList)) {
                     foreach ($output as $url => $feeds) {
-                        $txt .= sprintf("\n##[%s](%s)\n", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                        $p = parse_url($url);
+                        $host = $p['host'];
+                        if ($last_host !== $host) {
+                            $txt .= sprintf("\n##[%s](%s)", str_replace(['http://', 'https://', 'www.'], '', $url), $url);
+                            $last_host = $host;
+                        }
                         if (!empty($feeds)) {
                             foreach ($feeds as $u) {
-                                $txt .= sprintf(" - Subscribe: [%s](%s)\n", $u, $u);
+                                $txt .= sprintf("\n - Subscribe: [%s](%s)", $u, $u);
                             }
                         }
                     }
@@ -568,8 +581,11 @@ if (!empty($output)) {
                     foreach ($subscriptionList->subscriptions as $s) {
                         $p = parse_url($s->getSiteUrl());
                         $host = str_replace('www.', '', $p['host']);
-                        $txt .= sprintf("\n\n## %s\n### [%s](%s)\n%s\n", $host, $s->getTitle(), $s->getSiteUrl(), $s->getDescription());
-                        $txt .= sprintf(trim(" - Subscribe %s: [%s](%s) %s"), $s->getType(), $s->getFeedUrl(), $s->getFeedUrl(), $s->getCategory());
+                        if ($last_host !== $host) {
+                            $txt .= sprintf("\n\n## %s\n### [%s](%s)\n%s", $host, $s->getTitle(), $s->getSiteUrl(), $s->getDescription());
+                            $last_host = $host;
+                        }
+                        $txt .= sprintf("\n - Subscribe: %s: [%s](%s) %s", $s->getType(), $s->getFeedUrl(), $s->getFeedUrl(), $s->getCategory());
                     }
                 }
                 $txt .= "\n\nTitle list generated with [vijinho/feedex](https://github.com/vijinho/feedex)";
