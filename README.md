@@ -51,16 +51,6 @@ The script can take-in previous txt format output and re-use it as input, checki
 
 ### txt
 
-The input/output format for 'txt' is:
-
-```
-<URL><CR/LF>
-<TAB><FEED_URL_1><CR>/LF>
-<TAB><FEED_URL_2><CR>/LF>
-
-<URL2><CR/LF>
-```
-
 Only stand-alone URL lines without following <TAB> feed lines are searched for feeds, unless `--force-check` is used which forces all URLs to be checked in the text file.
 
 
@@ -128,9 +118,6 @@ http://grahamhancock.com/blog/
 
 ### OPML file to Markdown
 
-```
-# Podcasts
-
 `php feedex.php --input=audio.opml -e -fmd --filename=podcasts.md`
 
 Example output, slightly modified: [urunu.com/blog/2018-10-18-podcasts](http://www.urunu.com/blog/2018-10-18-podcasts)
@@ -152,10 +139,6 @@ http://example.com/blog/public
 output as json, saving to a filename 'urls.json' and debugging enabled:
 
 `php feedex.php --url=http://example.com/blog/public --filename=urls.json --format=json`
-
-```
-
-```
 
 output with full-debugging:
 
