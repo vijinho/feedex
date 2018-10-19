@@ -401,6 +401,7 @@ $opml = [];
 
 $urls = array_shuffle($urls); // randomize fetch of feed urls
 foreach ($urls as $url => $feeds) {
+    unset($urls[$url]); // no longer needed
 
     if (empty($feeds) || !is_array($feeds)) {
         continue;
