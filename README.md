@@ -40,10 +40,11 @@ Extract and save feeds from URL(s)
         -i   --input={filename}            (Required or -u) Text file of URLs, one-per-line to read in and process.
         -c,  --clear                       (Optional) Clear-out URLs which have no feeds before writing output file.
         -e,  --echo                        (Optional) Echo/output the result to stdout if successful
-        -f   --format={txt|json|php|opml}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml
+        -f   --format={txt|json|php|opml|md}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml|markdown
              --filename={output}           (Optional) Filename for output data from operation
              --force-check                 (Optional) Forcibly check URLs, even for those which already have feeds in the input file.
- ```
+             --skip-opml                   (Optional) Skip opml processing, just go to output, e.g. for generating markdown
+```
 
 ## Example output Format
 

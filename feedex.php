@@ -35,6 +35,7 @@ require_once dirname(__FILE__) . '/vendor/autoload.php';
 use PicoFeed\Reader\Reader;
 use PicoFeed\PicoFeedException;
 use PicoFeed\Serialization\SubscriptionListParser;
+use PicoFeed\Serialization\SubscriptionListBuilder;
 
 //-----------------------------------------------------------------------------
 // detect if run in web mode or cli
@@ -93,7 +94,7 @@ switch (php_sapi_name()) {
 $options = getopt("hvdu:f:d:ei:gc",
     [
     'help', 'verbose', 'debug', 'echo', 'url:', 'format:', 'filename:', 'input:',
-    'force-check', 'clear'
+    'force-check', 'clear', 'skip-opml'
     ]);
 
 $do = [];
@@ -105,7 +106,8 @@ foreach ([
  'url'         => ['u', 'url'],
  'input'       => ['i', 'input'],
  'clear'       => ['c', 'clear'],
- 'force-check' => [null, 'force-check']
+ 'force-check' => [null, 'force-check'],
+ 'skip-opml'   => [null, 'skip-opml'],
 ] as $i => $opts) {
     $do[$i] = (int) (array_key_exists($opts[0], $options) || array_key_exists($opts[1],
             $options));
@@ -152,6 +154,7 @@ if (empty($options) || $do['help'] || !($do['url'] || $do['input'])) {
         "\t-f   --format={txt|json|php|opml|md}  (Optional) Output format for screen and filename: txt (default)|json|php(serialized)|opml|markdown",
         "\t     --filename={output}           (Optional) Filename for output data from operation",
         "\t     --force-check                 (Optional) Forcibly check URLs, even for those which already have feeds in the input file.",
+        "\t     --skip-opml                   (Optional) Skip opml processing, just go to output, e.g. for generating markdown",
     ]);
 
     // goto jump here if there's a problem
@@ -237,6 +240,14 @@ if (!empty($input_filename)) {
             }
             try {
                 $subscriptionList = SubscriptionListParser::create($data)->parse();
+
+                // do not process opml if subscriptions already exist
+                if (!empty($subscriptionList) && $do['skip-opml']) {
+                    $opmlBuilder = new SubscriptionListBuilder($subscriptionList);
+                    $data        = $opmlBuilder->build();
+                    goto output;
+                }
+
                 if (!is_array($subscriptionList->subscriptions)) {
                     $errors[] = "Failed to load and parse OPML data from: $input_filename";
                     goto errors;
@@ -377,12 +388,12 @@ if (OUTPUT_FORMAT !== 'opml') {
     $data = $urls;
     goto output;
 }
+
 //-----------------------------------------------------------------------------
 // create OPML
 
 use PicoFeed\Serialization\Subscription;
 use PicoFeed\Serialization\SubscriptionList;
-use PicoFeed\Serialization\SubscriptionListBuilder;
 
 // create subscription list
 $subscriptionList = SubscriptionList::create()
@@ -393,7 +404,7 @@ $opml = [];
 $urls = array_shuffle($urls); // randomize fetch of feed urls
 foreach ($urls as $url => $feeds) {
 
-    if (empty($feeds)) {
+    if (empty($feeds) || !is_array($feeds)) {
         continue;
     }
 
@@ -1056,4 +1067,3 @@ function url_resolve($url, $options = [])
 
     return $return;
 }
-
